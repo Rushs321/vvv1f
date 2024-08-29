@@ -3,40 +3,41 @@ const { pick } = require('lodash');
 const shouldCompress = require('./shouldCompress');
 const redirect = require('./redirect');
 const compress = require('./compress');
-const bypass = require('./bypass');
 const copyHeaders = require('./copyHeaders');
 
-function proxy(req, res) {
-  fetch(req.params.url, {
-    headers: {
-      ...pick(req.headers, ['cookie', 'dnt', 'referer']),
-      'user-agent': 'Bandwidth-Hero Compressor',
-      'x-forwarded-for': req.headers['x-forwarded-for'] || req.ip,
-      via: '1.1 bandwidth-hero'
-    },
-    compress: true,
-    redirect: 'follow',
-  })
-    .then(response => {
-      if (!response.ok) {
-        return redirect(req, res);
-      }
+async function proxy(request, reply) {
+  try {
+    const response = await fetch(request.params.url, {
+      headers: {
+        ...pick(request.headers, ['cookie', 'dnt', 'referer']),
+        'user-agent': 'Bandwidth-Hero Compressor',
+        'x-forwarded-for': request.headers['x-forwarded-for'] || request.ip,
+        via: '1.1 bandwidth-hero'
+      },
+      compress: true,
+      redirect: 'follow',
+    });
 
-      req.params.originType = response.headers.get('content-type') || '';
-      req.params.originSize = response.headers.get('content-length') || '0';
+    if (!response.ok) {
+      return redirect(request, reply);
+    }
 
-      copyHeaders(response, res);
-      res.setHeader('content-encoding', 'identity');
+    request.params.originType = response.headers.get('content-type') || '';
+    request.params.originSize = response.headers.get('content-length') || '0';
 
-      if (shouldCompress(req)) {
-        return compress(req, res, response.body);
-      } else {
-        res.setHeader('x-proxy-bypass', 1);
-        res.setHeader('content-length', req.params.originSize);
-        return response.body.pipe(res);
-      }
-    })
-    .catch(() => redirect(req, res));
+    copyHeaders(response, reply.raw);
+    reply.raw.setHeader('content-encoding', 'identity');
+
+    if (shouldCompress(request)) {
+      return compress(request, reply, response.body);
+    } else {
+      reply.raw.setHeader('x-proxy-bypass', 1);
+      reply.raw.setHeader('content-length', request.params.originSize);
+      response.body.pipe(reply.raw);
+    }
+  } catch (error) {
+    redirect(request, reply);
+  }
 }
 
 module.exports = proxy;

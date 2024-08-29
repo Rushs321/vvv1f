@@ -1,9 +1,14 @@
 function copyHeaders(source, target) {
-  for (const [key, value] of Object.entries(source.headers)) {
+  if (!source || !source.headers) {
+    console.error('Invalid source object or headers:', source);
+    return;
+  }
+
+  for (const [key, value] of source.headers.entries()) {
     try {
-      target.header(key, value);
+      target.header(key, value); // Use Fastify's method to set headers
     } catch (e) {
-      console.log(e.message);
+      console.error('Error setting header:', key, e.message);
     }
   }
 }

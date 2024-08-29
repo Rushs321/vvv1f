@@ -1,26 +1,26 @@
 const sharp = require('sharp');
 const redirect = require('./redirect');
 
-function compress(req, res, input) {
-  const format = req.params.webp ? 'webp' : 'jpeg';
+function compress(request, reply, input) {
+  const format = request.params.webp ? 'webp' : 'jpeg';
 
   const transform = sharp()
-    .grayscale(req.params.grayscale)
+    .grayscale(request.params.grayscale)
     .toFormat(format, {
-      quality: req.params.quality,
+      quality: request.params.quality,
       progressive: true,
       optimizeScans: true
     });
 
   input.pipe(transform)
     .on('info', info => {
-      res.setHeader('content-type', `image/${format}`);
-      res.setHeader('x-original-size', req.params.originSize);
-      res.setHeader('x-bytes-saved', req.params.originSize - info.size);
-      res.status(200);
+      reply.raw.setHeader('content-type', `image/${format}`);
+      reply.raw.setHeader('x-original-size', request.params.originSize);
+      reply.raw.setHeader('x-bytes-saved', request.params.originSize - info.size);
+      reply.code(200);
     })
-    .on('error', () => redirect(req, res))
-    .pipe(res);
+    .on('error', () => redirect(request, reply))
+    .pipe(reply.raw);
 }
 
 module.exports = compress;

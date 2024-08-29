@@ -18,7 +18,7 @@ async function proxy(request, reply) {
       redirect: 'follow',
     });
 
-    if (!response.ok) {
+    if (response.ok) {
       return redirect(request, reply);
     }
 

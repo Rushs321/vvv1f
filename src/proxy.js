@@ -7,7 +7,7 @@ const copyHeaders = require('./copyHeaders');
 
 async function proxy(request, reply) {
   try {
-    const response = await fetch(request.params.url, {
+    const response = await fetch(request.query.url, {
       headers: {
         ...pick(request.headers, ['cookie', 'dnt', 'referer']),
         'user-agent': 'Bandwidth-Hero Compressor',

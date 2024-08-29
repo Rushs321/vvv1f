@@ -4,7 +4,7 @@ const MIN_COMPRESS_LENGTH = 1024;
 const MIN_TRANSPARENT_COMPRESS_LENGTH = MIN_COMPRESS_LENGTH * 100;
 
 function shouldCompress(request) {
-  const { originType, originSize, webp } = request.query;
+  const { originType, originSize, webp } = request.params;
 
   // Convert originSize to a number and default to 0 if invalid
   const size = parseInt(originSize, 10) || 0;

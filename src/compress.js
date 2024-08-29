@@ -1,7 +1,7 @@
 const sharp = require('sharp');
 const redirect = require('./redirect');
 
-async function compress(request, reply, input) {
+function compress(request, reply, input) {
   const format = request.params.webp ? 'webp' : 'jpeg';
 
   const transform = sharp()
@@ -12,27 +12,45 @@ async function compress(request, reply, input) {
       optimizeScans: true
     });
 
-  try {
-    // Collect the data into a buffer
-    const data = await new Promise((resolve, reject) => {
-      const buffers = [];
-      input.pipe(transform)
-        .on('data', (chunk) => buffers.push(chunk))
-        .on('end', () => resolve(Buffer.concat(buffers)))
-        .on('error', reject);
-    });
+  // Track if the response has been sent
+  let responseSent = false;
 
-    reply.header('content-type', `image/${format}`);
-    reply.header('x-original-size', request.params.originSize);
-    reply.header('x-bytes-saved', request.params.originSize - data.length);
-    reply.status(200);
-
-    // Send the compressed image data
-    reply.send(data);
-  } catch (error) {
-    console.error('Error during compression:', error);
-    redirect(request, reply);
+  // Function to handle errors and ensure response is not sent more than once
+  function handleError(err) {
+    if (!responseSent) {
+      responseSent = true;
+      console.error('Error during compression:', err);
+      redirect(request, reply);
+    }
   }
+
+  // Set up event listeners and pipe data
+  input.pipe(transform)
+    .on('info', (info) => {
+      if (!responseSent) {
+        responseSent = true;
+        reply.header('content-type', `image/${format}`);
+        reply.header('x-original-size', request.params.originSize);
+        reply.header('x-bytes-saved', request.params.originSize - info.size);
+        reply.status(200);
+      }
+    })
+    .on('error', handleError)
+    .pipe(reply.raw)
+    .on('finish', () => {
+      // Ensure the response has been properly finished
+      if (!responseSent) {
+        responseSent = true;
+        reply.raw.end();
+      }
+    })
+    .on('close', () => {
+      // Ensure the response has been properly closed
+      if (!responseSent) {
+        responseSent = true;
+        reply.raw.end();
+      }
+    });
 }
 
 module.exports = compress;

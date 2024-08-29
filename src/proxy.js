@@ -22,14 +22,18 @@ async function proxy(request, reply) {
       return redirect(request, reply);
     }
 
-    
-
+    // Copy headers first
     copyHeaders(response, reply);
+
+    // Set origin size after headers have been copied
     request.params.originType = response.headers.get('content-type') || '';
-    request.params.originSize = response.headers.get('content-length') || '0';
+    request.params.originSize = parseInt(response.headers.get('content-length'), 10) || 0;
 
     console.log('Fetched image type:', request.params.originType);
     console.log('Fetched image size:', request.params.originSize);
+
+    // Log response headers for debugging
+    console.log('Response headers:', response.headers);
 
     reply.header('content-encoding', 'identity');
 
@@ -45,6 +49,5 @@ async function proxy(request, reply) {
     redirect(request, reply);
   }
 }
-
 
 module.exports = proxy;

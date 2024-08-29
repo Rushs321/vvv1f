@@ -6,7 +6,8 @@ function copyHeaders(source, target) {
 
   for (const [key, value] of source.headers.entries()) {
     try {
-      target.header(key, value); // Use Fastify's method to set headers
+      // Use raw.setHeader for low-level header setting
+      target.raw.setHeader(key, value);
     } catch (e) {
       console.error('Error setting header:', key, e.message);
     }

@@ -8,7 +8,8 @@ function redirect(request, reply) {
   reply.header('expires', '');
   reply.header('date', '');
   reply.header('etag', '');
-  reply.redirect(302, encodeURI(request.params.url));
+  reply.header('location', encodeURI(request.params.url));
+  reply.code(302).send();
 }
 
 module.exports = redirect;

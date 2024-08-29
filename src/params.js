@@ -1,4 +1,4 @@
-"use strict";
+
 const DEFAULT_QUALITY = 40;
 
 async function params(request, reply) {
@@ -13,6 +13,10 @@ async function params(request, reply) {
     grayscale: request.query.bw != 0,
     quality: parseInt(request.query.l, 10) || DEFAULT_QUALITY
   };
+
+  // Add logging to verify parameter settings
+  console.log('Params set:', request.params);
 }
+
 
 module.exports = params;

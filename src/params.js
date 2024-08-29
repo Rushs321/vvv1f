@@ -1,21 +1,21 @@
 const DEFAULT_QUALITY = 40;
 
-function params(req, res, next) {
-  const { url, jpeg, bw, l } = req.query;
+async function params(request, reply) {
+  const { url, jpeg, bw, l } = request.query;
 
   if (!url) {
-    return res.end('bandwidth-hero-proxy');
+    return reply.send('bandwidth-hero-proxy');
   }
 
   const urls = Array.isArray(url) ? url.join('&url=') : url;
   const cleanedUrl = urls.replace(/http:\/\/1\.1\.\d\.\d\/bmi\/(https?:\/\/)?/i, 'http://');
 
-  req.params.url = cleanedUrl;
-  req.params.webp = !jpeg;
-  req.params.grayscale = bw !== '0';
-  req.params.quality = parseInt(l, 10) || DEFAULT_QUALITY;
-
-  next();
+  request.params = {
+    url: cleanedUrl,
+    webp: !jpeg,
+    grayscale: bw !== '0',
+    quality: parseInt(l, 10) || DEFAULT_QUALITY
+  };
 }
 
 module.exports = params;

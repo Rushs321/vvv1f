@@ -18,12 +18,15 @@ async function proxy(request, reply) {
       redirect: 'follow',
     });
 
-    if (response.ok) {
+    if (!response.ok) {
       return redirect(request, reply);
     }
 
     request.params.originType = response.headers.get('content-type') || '';
     request.params.originSize = response.headers.get('content-length') || '0';
+
+    console.log('Fetched image type:', request.params.originType);
+    console.log('Fetched image size:', request.params.originSize);
 
     copyHeaders(response, reply);
     reply.header('content-encoding', 'identity');
@@ -36,8 +39,10 @@ async function proxy(request, reply) {
       response.body.pipe(reply.raw);
     }
   } catch (error) {
+    console.error('Error fetching image:', error);
     redirect(request, reply);
   }
 }
+
 
 module.exports = proxy;

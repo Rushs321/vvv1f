@@ -1,9 +1,11 @@
 function copyHeaders(source, target) {
-  for (const [key, value] of Object.entries(source.raw.headers)) {
+  const headers = source.raw.headers; // Use raw.headers to get the headers from the source
+  
+  for (const [key, value] of Object.entries(headers)) {
     try {
-      target.setHeader(key, value);
+      target.header(key, value); // Set the headers on the target using Fastify's method
     } catch (e) {
-      console.log(e.message);
+      console.log(e.message); // Log any errors that occur
     }
   }
 }

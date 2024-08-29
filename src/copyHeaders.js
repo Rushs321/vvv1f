@@ -1,5 +1,5 @@
 function copyHeaders(source, target) {
-  for (const [key, value] of Object.entries(source.headers)) {
+  for (const [key, value] of Object.entries(source.raw.headers)) {
     try {
       target.setHeader(key, value);
     } catch (e) {

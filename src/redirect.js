@@ -1,15 +1,14 @@
-function redirect(req, res) {
-  if (res.headersSent) {
+function redirect(request, reply) {
+  if (reply.sent) {
     return;
   }
 
-  res.setHeader('content-length', 0);
-  res.removeHeader('cache-control');
-  res.removeHeader('expires');
-  res.removeHeader('date');
-  res.removeHeader('etag');
-  res.setHeader('location', encodeURI(req.params.url));
-  res.status(302).end();
+  reply.header('content-length', '0');
+  reply.header('cache-control', '');
+  reply.header('expires', '');
+  reply.header('date', '');
+  reply.header('etag', '');
+  reply.redirect(302, encodeURI(request.params.url));
 }
 
 module.exports = redirect;

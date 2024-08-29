@@ -22,13 +22,15 @@ async function proxy(request, reply) {
       return redirect(request, reply);
     }
 
+    
+
+    copyHeaders(response, reply);
     request.params.originType = response.headers.get('content-type') || '';
     request.params.originSize = response.headers.get('content-length') || '0';
 
     console.log('Fetched image type:', request.params.originType);
     console.log('Fetched image size:', request.params.originSize);
 
-    copyHeaders(response, reply);
     reply.header('content-encoding', 'identity');
 
     if (shouldCompress(request)) {

@@ -7,7 +7,7 @@ const copyHeaders = require('./copyHeaders');
 
 async function proxy(request, reply) {
   try {
-    const response = await fetch(request.query.url, {
+    const response = await fetch(request.params.url, {
       headers: {
         ...pick(request.headers, ['cookie', 'dnt', 'referer']),
         'user-agent': 'Bandwidth-Hero Compressor',
@@ -25,14 +25,14 @@ async function proxy(request, reply) {
     request.params.originType = response.headers.get('content-type') || '';
     request.params.originSize = response.headers.get('content-length') || '0';
 
-    copyHeaders(response, reply.raw);
-    reply.raw.setHeader('content-encoding', 'identity');
+    copyHeaders(response, reply);
+    reply.header('content-encoding', 'identity');
 
     if (shouldCompress(request)) {
       return compress(request, reply, response.body);
     } else {
-      reply.raw.setHeader('x-proxy-bypass', 1);
-      reply.raw.setHeader('content-length', request.params.originSize);
+      reply.header('x-proxy-bypass', 1);
+      reply.header('content-length', request.params.originSize);
       response.body.pipe(reply.raw);
     }
   } catch (error) {

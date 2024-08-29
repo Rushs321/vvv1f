@@ -1,16 +1,19 @@
-"use strict";
+
 
 const MIN_COMPRESS_LENGTH = 1024;
 const MIN_TRANSPARENT_COMPRESS_LENGTH = MIN_COMPRESS_LENGTH * 100;
 
 function shouldCompress(request) {
   const { originType, originSize, webp } = request.params;
-
-  // Convert originSize to a number and default to 0 if invalid
   const size = parseInt(originSize, 10) || 0;
 
-  if (!originType || !originSize) return false; // Ensure originType and originSize are defined
+  console.log('Checking compression:');
+  console.log('originType:', originType);
+  console.log('originSize:', originSize);
+  console.log('webp:', webp);
+  console.log('size:', size);
 
+  if (!originType || !originSize) return false;
   if (!originType.startsWith('image')) return false;
   if (size === 0) return false;
   if (request.headers.range) return false;
@@ -25,5 +28,6 @@ function shouldCompress(request) {
 
   return true;
 }
+
 
 module.exports = shouldCompress;
